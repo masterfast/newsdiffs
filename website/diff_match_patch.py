@@ -1,33 +1,4 @@
-#!/usr/bin/python2.4
-
 from __future__ import division
-
-"""Diff Match and Patch
-
-Copyright 2006 Google Inc.
-http://code.google.com/p/google-diff-match-patch/
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
-
-"""Functions for diff, match and patch.
-
-Computes the difference between two texts to create a patch.
-Applies the patch onto another text, allowing for errors.
-"""
-
-__author__ = 'fraser@google.com (Neil Fraser)'
-
 import math
 import re
 import sys
@@ -35,74 +6,16 @@ import time
 import urllib
 
 class diff_match_patch:
-  """Class containing the diff, match and patch methods.
-
-  Also contains the behaviour settings.
-  """
+ 
 
   def __init__(self):
-    """Inits a diff_match_patch object with default settings.
-    Redefine these in your program to override the defaults.
-    """
-
-    # Number of seconds to map a diff before giving up (0 for infinity).
-    self.Diff_Timeout = 1.0
-    # Cost of an empty edit operation in terms of edit characters.
-    self.Diff_EditCost = 4
-    # How eagerly to 'split' an equality, absorbing it into neighboring
-    # large changes.  (-infinity => compare equality to min of changes;
-    # 0 => geometric mean; 1 => mean; infinity => max)
-    self.Diff_SplitWeight = -2
-    # How eagerly to 'split' small equalities.
-    self.Diff_SplitSmall = 2
-    # Whether to show &para; at the end of each line.
-    self.Diff_ShowPara = True
-
-    # At what point is no match declared (0.0 = perfection, 1.0 = very loose).
-    self.Match_Threshold = 0.5
-    # How far to search for a match (0 = exact location, 1000+ = broad match).
-    # A match this many characters away from the expected location will add
-    # 1.0 to the score (0.0 is a perfect match).
-    self.Match_Distance = 1000
-    # When deleting a large block of text (over ~64 characters), how close do
-    # the contents have to be to match the expected contents. (0.0 = perfection,
-    # 1.0 = very loose).  Note that Match_Threshold controls how closely the
-    # end points of a delete need to match.
-    self.Patch_DeleteThreshold = 0.5
-    # Chunk size for context length.
-    self.Patch_Margin = 4
-
-    # The number of bits in an int.
-    # Python has no maximum, thus to disable patch splitting set to 0.
-    # However to avoid long patches in certain pathological cases, use 32.
-    # Multiple short patches (using native ints) are much faster than long ones.
-    self.Match_MaxBits = 32
-
-  #  DIFF FUNCTIONS
-
-  # The data structure representing a diff is an array of tuples:
-  # [(DIFF_DELETE, "Hello"), (DIFF_INSERT, "Goodbye"), (DIFF_EQUAL, " world.")]
-  # which means: delete "Hello", add "Goodbye" and keep " world."
+   
   DIFF_DELETE = -1
   DIFF_INSERT = 1
   DIFF_EQUAL = 0
 
   def diff_main(self, text1, text2, checklines=True, deadline=None):
-    """Find the differences between two texts.  Simplifies the problem by
-      stripping any common prefix or suffix off the texts before diffing.
 
-    Args:
-      text1: Old string to be diffed.
-      text2: New string to be diffed.
-      checklines: Optional speedup flag.  If present and false, then don't run
-        a line-level diff first to identify the changed areas.
-        Defaults to true, which does a faster, slightly less optimal diff.
-      deadline: Optional time when the diff should be complete by.  Used
-        internally for recursive calls.  Users should set DiffTimeout instead.
-
-    Returns:
-      Array of changes.
-    """
     # Set a deadline by which time the diff must be complete.
     if deadline == None:
       # Unlike in most languages, Python counts time in seconds.
@@ -265,18 +178,6 @@ class diff_match_patch:
     return diffs
 
   def diff_bisect(self, text1, text2, deadline):
-    """Find the 'middle snake' of a diff, split the problem in two
-      and return the recursively constructed diff.
-      See Myers 1986 paper: An O(ND) Difference Algorithm and Its Variations.
-
-    Args:
-      text1: Old string to be diffed.
-      text2: New string to be diffed.
-      deadline: Time at which to bail if not yet complete.
-
-    Returns:
-      Array of diff tuples.
-    """
 
     # Cache the text lengths to prevent multiple calls.
     text1_length = len(text1)
@@ -392,36 +293,7 @@ class diff_match_patch:
     return diffs + diffsb
 
   def diff_linesToChars(self, text1, text2):
-    """Split two texts into an array of strings.  Reduce the texts to a string
-    of hashes where each Unicode character represents one line.
-
-    Args:
-      text1: First string.
-      text2: Second string.
-
-    Returns:
-      Three element tuple, containing the encoded text1, the encoded text2 and
-      the array of unique strings.  The zeroth element of the array of unique
-      strings is intentionally blank.
-    """
-    lineArray = []  # e.g. lineArray[4] == "Hello\n"
-    lineHash = {}   # e.g. lineHash["Hello\n"] == 4
-
-    # "\x00" is a valid character, but various debuggers don't like it.
-    # So we'll insert a junk entry to avoid generating a null character.
-    lineArray.append('')
-
-    def diff_linesToCharsMunge(text):
-      """Split a text into an array of strings.  Reduce the texts to a string
-      of hashes where each Unicode character represents one line.
-      Modifies linearray and linehash through being a closure.
-
-      Args:
-        text: String to encode.
-
-      Returns:
-        Encoded string.
-      """
+   
       chars = []
       # Walk the text, pulling out a substring for each line.
       # text.split('\n') would would temporarily double our memory footprint.
